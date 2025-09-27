@@ -13,13 +13,14 @@ int main()
     for (int i = 0; i < n; i++) {
         cout << array[i] << " ";
     }
-
+cout << " "<<endl;
 
     int sum = 0;
     for (int i = 0; i < n; i++) {
         sum = sum + array[i];
     }
-    cout << "  Summ of your elements " << sum << endl;
+    cout << "Summ of your elements " << sum << endl;
+
 
 
     int max = array[0];
@@ -53,5 +54,6 @@ int main()
 
     return 0;
 }
+
 
 
