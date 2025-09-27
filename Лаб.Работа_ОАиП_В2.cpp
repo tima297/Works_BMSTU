@@ -3,27 +3,27 @@ using namespace std;
 
 int main()
 {
-    const int a = 10;
-    int array[a];
-    for (int i = 0; i < a; i++) {
+    const int n = 10;
+    int array[n];
+    for (int i = 0; i < n; i++) {
         cout << "write the " << i + 1 << " number:" << endl;
         cin >> array[i];
 
     }
-    for (int i = 0; i < a; i++) {
+    for (int i = 0; i < n; i++) {
         cout << array[i] << " ";
     }
 
 
     int sum = 0;
-    for (int i = 0; i < a; i++) {
+    for (int i = 0; i < n; i++) {
         sum = sum + array[i];
     }
     cout << "  Summ of your elements " << sum << endl;
 
 
     int max = array[0];
-    for (int i = 0; i < a; i++) {
+    for (int i = 0; i < n; i++) {
         if (array[i] > max) {
             max = array[i];
 
@@ -44,7 +44,7 @@ int main()
             }
 
         }
-        for (int i = 0; i < a; i++) {
+        for (int i = 0; i < n; i++) {
             cout << array[i] << " ";
         }
     }
@@ -53,4 +53,5 @@ int main()
 
     return 0;
 }
+
 
