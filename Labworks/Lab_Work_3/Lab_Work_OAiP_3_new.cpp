@@ -100,7 +100,7 @@ void sortProducts() {
         }
     }
 
-    // Записываем обратно
+    // Запись
     ofstream outFile("products.txt");
     for (int i = 0; i < count; i++) {
         outFile << products[i].name << "," << products[i].price << "," << products[i].quantity << "\n";
@@ -164,7 +164,7 @@ int main() {
     setlocale(LC_ALL, "Russian");
     int choice;
 
-    // Создаем файл если его нет
+    // Создаем файл 
     ofstream file("products.txt", ios::app);
     file.close();
 
@@ -186,3 +186,4 @@ int main() {
 
     return 0;
 }
+
