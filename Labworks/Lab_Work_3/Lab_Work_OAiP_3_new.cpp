@@ -1,8 +1,6 @@
-﻿#include <iostream>
+#include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
-#include <algorithm>
 using namespace std;
 
 struct Product {
@@ -10,61 +8,6 @@ struct Product {
     double price;
     int quantity;
 };
-
-// Чтение списка продуктов из файла
-vector<Product> readProducts() {
-    vector<Product> products;
-    ifstream file("products.txt");
-    string line;
-    getline(file, line); // Пропустить заголовок
-    while (getline(file, line)) {
-        if (line.empty()) continue;
-        int pos1 = line.find(',');
-        int pos2 = line.find(',', pos1 + 1);
-        if (pos1 != -1 && pos2 != -1) {
-            Product p;
-            p.name = line.substr(0, pos1);
-            p.price = stod(line.substr(pos1 + 1, pos2 - pos1 - 1));
-            p.quantity = stoi(line.substr(pos2 + 1));
-            products.push_back(p);
-        }
-    }
-    return products;
-}
-
-// Запись списка продуктов в файл
-void writeProducts(const vector<Product>& products) {
-    ofstream file("products.txt");
-    file << "Название,Цена,Количество\n";
-    for (const auto& p : products) {
-        file << p.name << "," << p.price << "," << p.quantity << "\n";
-    }
-}
-
-void createFile() {
-    ofstream file("products.txt");
-    file << "Название,Цена,Количество\n";
-    file.close();
-    string name;
-    double price;
-    int quantity;
-    while (true) {
-        cout << "Название (пусто для выхода): ";
-        getline(cin, name);
-        if (name.empty()) break;
-        cout << "Цена: ";
-        cin >> price;
-        cout << "Количество: ";
-        cin >> quantity;
-        cin.ignore();
-        ofstream file("products.txt", ios::app);
-        file << name << "," << price << "," << quantity << "\n";
-        file.close();
-        ofstream out("output.txt", ios::app);
-        out << "Добавлен: " << name << "\n";
-        out.close();
-    }
-}
 
 void addProduct() {
     Product p;
@@ -75,49 +18,95 @@ void addProduct() {
     cout << "Количество: ";
     cin >> p.quantity;
     cin.ignore();
+
     ofstream file("products.txt", ios::app);
     file << p.name << "," << p.price << "," << p.quantity << "\n";
     file.close();
-    ofstream out("output.txt", ios::app);
-    out << "Добавлен: " << p.name << "\n";
-    out.close();
 }
 
 void searchProduct() {
     string name;
     cout << "Введите название: ";
     getline(cin, name);
-    vector<Product> products = readProducts();
+
+    ifstream file("products.txt");
+    string line;
     bool found = false;
-    ofstream out("output.txt", ios::app);
-    out << "Поиск: " << name << "\n";
-    for (const auto& p : products) {
-        if (p.name.find(name) != string::npos) {
-            out << "Найден: " << p.name << " " << p.price << " " << p.quantity << "\n";
-            cout << p.name << ", " << p.price << ", " << p.quantity << endl;
-            found = true;
+
+    while (getline(file, line)) {
+        int pos1 = line.find(',');
+        int pos2 = line.find(',', pos1 + 1);
+
+        if (pos1 != -1 && pos2 != -1) {
+            string productName = line.substr(0, pos1);
+            if (productName.find(name) != -1) {
+                string priceStr = line.substr(pos1 + 1, pos2 - pos1 - 1);
+                string quantityStr = line.substr(pos2 + 1);
+                cout << productName << ", " << priceStr << ", " << quantityStr << endl;
+                found = true;
+            }
         }
     }
-    if (!found) cout << "Продукт не найден!" << endl;
-    out.close();
+    file.close();
+
+    if (!found) {
+        cout << "Ничего не найдено" << endl;
+    }
 }
 
 void sortProducts() {
+    // Читаем все продукты в массив
+    Product products[100];
+    int count = 0;
+
+    ifstream file("products.txt");
+    string line;
+
+    while (getline(file, line) && count < 100) {
+        int pos1 = line.find(',');
+        int pos2 = line.find(',', pos1 + 1);
+
+        if (pos1 != -1 && pos2 != -1) {
+            products[count].name = line.substr(0, pos1);
+            products[count].price = stod(line.substr(pos1 + 1, pos2 - pos1 - 1));
+            products[count].quantity = stoi(line.substr(pos2 + 1));
+            count++;
+        }
+    }
+    file.close();
+
     int choice;
     cout << "1 - по цене, 2 - по количеству: ";
     cin >> choice;
     cin.ignore();
-    vector<Product> products = readProducts();
+
+    // Сортировка пузырьком
     if (choice == 1) {
-        sort(products.begin(), products.end(), [](const Product& a, const Product& b) { return a.price < b.price; });
+        for (int i = 0; i < count - 1; i++) {
+            for (int j = 0; j < count - i - 1; j++) {
+                if (products[j].price > products[j + 1].price) {
+                    swap(products[j], products[j + 1]);
+                }
+            }
+        }
     }
     else {
-        sort(products.begin(), products.end(), [](const Product& a, const Product& b) { return a.quantity < b.quantity; });
+        for (int i = 0; i < count - 1; i++) {
+            for (int j = 0; j < count - i - 1; j++) {
+                if (products[j].quantity > products[j + 1].quantity) {
+                    swap(products[j], products[j + 1]);
+                }
+            }
+        }
     }
-    writeProducts(products);
-    ofstream out("output.txt", ios::app);
-    out << "Сортировка завершена\n";
-    out.close();
+
+    // Записываем обратно
+    ofstream outFile("products.txt");
+    for (int i = 0; i < count; i++) {
+        outFile << products[i].name << "," << products[i].price << "," << products[i].quantity << "\n";
+    }
+    outFile.close();
+
     cout << "Сортировка завершена!\n";
 }
 
@@ -126,47 +115,74 @@ void findCheapProducts() {
     cout << "Максимальная цена: ";
     cin >> maxPrice;
     cin.ignore();
-    vector<Product> products = readProducts();
+
+    ifstream file("products.txt");
+    string line;
     bool found = false;
-    ofstream out("output.txt", ios::app);
-    out << "Продукты до " << maxPrice << ":\n";
-    for (const auto& p : products) {
-        if (p.price <= maxPrice) {
-            out << p.name << " " << p.price << " " << p.quantity << "\n";
-            cout << p.name << ", " << p.price << ", " << p.quantity << endl;
-            found = true;
+
+    while (getline(file, line)) {
+        int pos1 = line.find(',');
+        int pos2 = line.find(',', pos1 + 1);
+
+        if (pos1 != -1 && pos2 != -1) {
+            string productName = line.substr(0, pos1);
+            double price = stod(line.substr(pos1 + 1, pos2 - pos1 - 1));
+
+            if (price <= maxPrice) {
+                string quantityStr = line.substr(pos2 + 1);
+                cout << productName << ", " << price << ", " << quantityStr << endl;
+                found = true;
+            }
         }
     }
-    if (!found) cout << "Таких продуктов нет!\n";
-    out.close();
+    file.close();
+
+    if (!found) {
+        cout << "Нет продуктов по такой цене" << endl;
+    }
 }
 
 void showAll() {
-    vector<Product> products = readProducts();
-    ofstream out("output.txt", ios::app);
-    out << "Все продукты:\n";
-    for (const auto& p : products) {
-        out << p.name << " " << p.price << " " << p.quantity << "\n";
-        cout << p.name << ", " << p.price << ", " << p.quantity << endl;
+    ifstream file("products.txt");
+    string line;
+
+    while (getline(file, line)) {
+        int pos1 = line.find(',');
+        int pos2 = line.find(',', pos1 + 1);
+
+        if (pos1 != -1 && pos2 != -1) {
+            string productName = line.substr(0, pos1);
+            string priceStr = line.substr(pos1 + 1, pos2 - pos1 - 1);
+            string quantityStr = line.substr(pos2 + 1);
+            cout << productName << ", " << priceStr << ", " << quantityStr << endl;
+        }
     }
-    out.close();
+    file.close();
 }
 
 int main() {
     setlocale(LC_ALL, "Russian");
     int choice;
+
+    // Создаем файл если его нет
+    ofstream file("products.txt", ios::app);
+    file.close();
+
     do {
-        cout << "1. Создать/заполнить файл\n2. Поиск\n3. Сортировка\n4. Добавить продукт\n5. Поиск по цене\n6. Показать все\n7. Выход\nВыбор: ";
+        cout << "1. Добавить продукт\n2. Поиск\n3. Сортировка\n4. Поиск по цене\n5. Показать все\n6. Выход\nВыбор: ";
         cin >> choice;
         cin.ignore();
+
         switch (choice) {
-        case 1: createFile(); break;
+        case 1: addProduct(); break;
         case 2: searchProduct(); break;
         case 3: sortProducts(); break;
-        case 4: addProduct(); break;
-        case 5: findCheapProducts(); break;
-        case 6: showAll(); break;
+        case 4: findCheapProducts(); break;
+        case 5: showAll(); break;
+        case 6: cout << "Выход..." << endl; break;
+        default: cout << "Неверный выбор!" << endl;
         }
-    } while (choice != 7);
+    } while (choice != 6);
+
     return 0;
 }
