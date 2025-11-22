@@ -20,6 +20,10 @@ void addProduct() {
     cin.ignore();
 
     ofstream file("products.txt", ios::app);
+    // Добавляем заголовок если файл пустой
+    if (file.tellp() == 0) {
+        file << "Название,Цена,Количество\n";
+    }
     file << p.name << "," << p.price << "," << p.quantity << "\n";
     file.close();
 }
@@ -30,8 +34,16 @@ void searchProduct() {
     getline(cin, name);
 
     ifstream file("products.txt");
+    if (!file.is_open()) {
+        cout << "Файл не найден!" << endl;
+        return;
+    }
+
     string line;
     bool found = false;
+    
+    // Пропускаем заголовок
+    getline(file, line);
 
     while (getline(file, line)) {
         int pos1 = line.find(',');
@@ -55,12 +67,18 @@ void searchProduct() {
 }
 
 void sortProducts() {
-    // Читаем все продукты в массив
     Product products[100];
     int count = 0;
 
     ifstream file("products.txt");
+    if (!file.is_open()) {
+        cout << "Файл не найден!" << endl;
+        return;
+    }
+
     string line;
+    // Пропускаем заголовок
+    getline(file, line);
 
     while (getline(file, line) && count < 100) {
         int pos1 = line.find(',');
@@ -75,12 +93,16 @@ void sortProducts() {
     }
     file.close();
 
+    if (count == 0) {
+        cout << "Нет продуктов для сортировки!" << endl;
+        return;
+    }
+
     int choice;
     cout << "1 - по цене, 2 - по количеству: ";
     cin >> choice;
     cin.ignore();
 
-    // Сортировка пузырьком
     if (choice == 1) {
         for (int i = 0; i < count - 1; i++) {
             for (int j = 0; j < count - i - 1; j++) {
@@ -90,7 +112,7 @@ void sortProducts() {
             }
         }
     }
-    else {
+    else if (choice == 2) {
         for (int i = 0; i < count - 1; i++) {
             for (int j = 0; j < count - i - 1; j++) {
                 if (products[j].quantity > products[j + 1].quantity) {
@@ -99,9 +121,13 @@ void sortProducts() {
             }
         }
     }
+    else {
+        cout << "Неверный выбор!" << endl;
+        return;
+    }
 
-    // Запись
     ofstream outFile("products.txt");
+    outFile << "Название,Цена,Количество\n";
     for (int i = 0; i < count; i++) {
         outFile << products[i].name << "," << products[i].price << "," << products[i].quantity << "\n";
     }
@@ -117,8 +143,16 @@ void findCheapProducts() {
     cin.ignore();
 
     ifstream file("products.txt");
+    if (!file.is_open()) {
+        cout << "Файл не найден!" << endl;
+        return;
+    }
+
     string line;
     bool found = false;
+    
+    // Пропускаем заголовок
+    getline(file, line);
 
     while (getline(file, line)) {
         int pos1 = line.find(',');
@@ -144,7 +178,14 @@ void findCheapProducts() {
 
 void showAll() {
     ifstream file("products.txt");
+    if (!file.is_open()) {
+        cout << "Файл не найден!" << endl;
+        return;
+    }
+
     string line;
+    // Пропускаем заголовок
+    getline(file, line);
 
     while (getline(file, line)) {
         int pos1 = line.find(',');
@@ -163,10 +204,6 @@ void showAll() {
 int main() {
     setlocale(LC_ALL, "Russian");
     int choice;
-
-    // Создаем файл 
-    ofstream file("products.txt", ios::app);
-    file.close();
 
     do {
         cout << "1. Добавить продукт\n2. Поиск\n3. Сортировка\n4. Поиск по цене\n5. Показать все\n6. Выход\nВыбор: ";
