@@ -70,6 +70,7 @@ void sortProducts() {
     Product products[100];
     int count = 0;
 
+    // Читаем файл
     ifstream file("products.txt");
     if (!file.is_open()) {
         cout << "Файл не найден!" << endl;
@@ -77,18 +78,38 @@ void sortProducts() {
     }
 
     string line;
-    // Пропускаем заголовок
-    getline(file, line);
 
+    // Пропускаем первую строку (заголовок)
+    if (!getline(file, line)) {
+        cout << "Файл пустой!" << endl;
+        file.close();
+        return;
+    }
+
+    // Читаем продукты
     while (getline(file, line) && count < 100) {
+        if (line.empty()) continue; // пропускаем пустые строки
+
         int pos1 = line.find(',');
         int pos2 = line.find(',', pos1 + 1);
 
         if (pos1 != -1 && pos2 != -1) {
-            products[count].name = line.substr(0, pos1);
-            products[count].price = stod(line.substr(pos1 + 1, pos2 - pos1 - 1));
-            products[count].quantity = stoi(line.substr(pos2 + 1));
-            count++;
+            try {
+                products[count].name = line.substr(0, pos1);
+                string priceStr = line.substr(pos1 + 1, pos2 - pos1 - 1);
+                string quantityStr = line.substr(pos2 + 1);
+
+                // Проверяем, что строки не пустые
+                if (!priceStr.empty() && !quantityStr.empty()) {
+                    products[count].price = stod(priceStr);
+                    products[count].quantity = stoi(quantityStr);
+                    count++;
+                }
+            }
+            catch (...) {
+                // Пропускаем строку с ошибкой
+                cout << "Ошибка в строке: " << line << endl;
+            }
         }
     }
     file.close();
@@ -98,11 +119,18 @@ void sortProducts() {
         return;
     }
 
+    // Выбор сортировки
     int choice;
     cout << "1 - по цене, 2 - по количеству: ";
     cin >> choice;
     cin.ignore();
 
+    if (choice != 1 && choice != 2) {
+        cout << "Неверный выбор!" << endl;
+        return;
+    }
+
+    // Сортировка пузырьком
     if (choice == 1) {
         for (int i = 0; i < count - 1; i++) {
             for (int j = 0; j < count - i - 1; j++) {
@@ -112,7 +140,7 @@ void sortProducts() {
             }
         }
     }
-    else if (choice == 2) {
+    else {
         for (int i = 0; i < count - 1; i++) {
             for (int j = 0; j < count - i - 1; j++) {
                 if (products[j].quantity > products[j + 1].quantity) {
@@ -121,19 +149,21 @@ void sortProducts() {
             }
         }
     }
-    else {
-        cout << "Неверный выбор!" << endl;
+
+    // Записываем обратно
+    ofstream outFile("products.txt");
+    if (!outFile.is_open()) {
+        cout << "Ошибка записи файла!" << endl;
         return;
     }
 
-    ofstream outFile("products.txt");
     outFile << "Название,Цена,Количество\n";
     for (int i = 0; i < count; i++) {
         outFile << products[i].name << "," << products[i].price << "," << products[i].quantity << "\n";
     }
     outFile.close();
 
-    cout << "Сортировка завершена!\n";
+    cout << "Сортировка завершена! Отсортировано " << count << " продуктов.\n";
 }
 
 void findCheapProducts() {
@@ -223,4 +253,5 @@ int main() {
 
     return 0;
 }
+
 
