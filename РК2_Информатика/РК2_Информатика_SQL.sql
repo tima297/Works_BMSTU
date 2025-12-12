@@ -77,8 +77,6 @@ INSERT INTO notes (student_id, note_text) VALUES
 CREATE INDEX idx_group_number ON students(group_number);
 CREATE INDEX idx_student_grade ON grades(student_id);
 
--- Для GIN индекса и полнотекстового поиска (pg_trgm или tsvector)
--- Используем встроенный механизм tsvector для русского языка
 CREATE INDEX idx_notes_gin ON notes USING GIN (to_tsvector('russian', note_text));
 
 -- 4. Представления
@@ -127,4 +125,5 @@ BEGIN;
     UPDATE attendance 
     SET status = 'Excused' 
     WHERE student_id = 2 AND date_attended = '2023-09-02';
+
 COMMIT;
